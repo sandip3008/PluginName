@@ -1,0 +1,25 @@
+{
+  "name": "PluginName",
+  "version": "0.0.1",
+  "description": "test",
+  "cordova": {
+    "id": "com.example.sample.plugin",
+    "platforms": [
+      "android"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandip3008/PluginName.git"
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "Sandip",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sandip3008/PluginName/issues"
+  },
+  "homepage": "https://github.com/sandip3008/PluginName#readme"
+}
