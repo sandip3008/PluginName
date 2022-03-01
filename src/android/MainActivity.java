@@ -1,4 +1,6 @@
-package package com.example.sample.plugin;;
+package com.example.sample.plugin;
+
+;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -28,6 +30,8 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Locale;
 
 import capacitor.android.plugins.R;
@@ -35,34 +39,39 @@ import capacitor.android.plugins.R;
 
 public class MainActivity extends Activity {
 
-    WebView webView;
-    ProgressBar progressBar;
+  WebView webView;
+  ProgressBar progressBar;
 
-    String url = "file:///android_asset/img/test.html";
+  String url = "file:///android_asset/img/test.html";
 
 //    final String filename= URLUtil.guessFileName(URLUtil.guessUrl(url));
 
-    @SuppressLint("SetJavaScriptEnabled")
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        String package_name = getApplication().getPackageName();
-        setContentView(getApplication().getResources().getIdentifier("activity_webview", "layout", package_name));
+  @SuppressLint("SetJavaScriptEnabled")
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    String package_name = getApplication().getPackageName();
+    setContentView(getApplication().getResources().getIdentifier("activity_webview", "layout", package_name));
 
 //        getSupportActionBar().hide();
 
-        webView = findViewById(R.id.web);
-        progressBar = findViewById(R.id.progress);
+    webView = findViewById(R.id.web);
+    progressBar = findViewById(R.id.progress);
 
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setSupportZoom(false);
-        webView.getSettings().setDomStorageEnabled(true);
-        webView.setWebViewClient(new myWebViewclient());
-        webView.loadUrl(url);
+    webView.getSettings().setJavaScriptEnabled(true);
+    webView.getSettings().setSupportZoom(false);
+    webView.getSettings().setDomStorageEnabled(true);
+    webView.setWebViewClient(new myWebViewclient());
+    String html = "";
+    try {
+      html = URLEncoder.encode(getIntent().getStringExtra("data"), "utf-8").replaceAll("\\+", " ");
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+    webView.loadData(html, "text/html; charset=utf-8", "UTF-8");
 
 
-
-        //  ==================== START HERE: THIS CODE BLOCK IS TO ENABLE FILE DOWNLOAD FROM THE WEB. YOU CAN COMMENT IT OUT IF YOUR APPLICATION DOES NOT REQUIRE FILE DOWNLOAD. IT WAS ADDED ON REQUEST ======//
+    //  ==================== START HERE: THIS CODE BLOCK IS TO ENABLE FILE DOWNLOAD FROM THE WEB. YOU CAN COMMENT IT OUT IF YOUR APPLICATION DOES NOT REQUIRE FILE DOWNLOAD. IT WAS ADDED ON REQUEST ======//
 
 //        webView.setDownloadListener(new DownloadListener() {
 //            String fileName = MimeTypeMap.getFileExtensionFromUrl(url);
@@ -84,107 +93,110 @@ public class MainActivity extends Activity {
 //
 //            }
 //        });
-        //  ==================== END HERE: THIS CODE BLOCK IS TO ENABLE FILE DOWNLOAD FROM THE WEB. YOU CAN COMMENT IT OUT IF YOUR APPLICATION DOES NOT REQUIRE FILE DOWNLOAD. IT WAS ADDED ON REQUEST ======//
+    //  ==================== END HERE: THIS CODE BLOCK IS TO ENABLE FILE DOWNLOAD FROM THE WEB. YOU CAN COMMENT IT OUT IF YOUR APPLICATION DOES NOT REQUIRE FILE DOWNLOAD. IT WAS ADDED ON REQUEST ======//
 
 
+  }
 
-    }
 
-
-    public class myWebViewclient extends WebViewClient{
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            view.loadUrl(url);
-            return true;
-        }
-
-        @Override
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            Toast.makeText(getApplicationContext(), "No internet connection", Toast.LENGTH_LONG).show();
-            webView.loadUrl("file:///android_asset/lost.html");
-        }
-
-        @Override
-        public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-            super.onReceivedSslError(view, handler, error);
-            handler.cancel();
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            progressBar.setVisibility(View.GONE);
-            createWebPrintJob(view);
-        }
-    }
-
+  public class myWebViewclient extends WebViewClient {
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-
-        if ((keyCode == KeyEvent.KEYCODE_BACK) && webView.canGoBack()) {
-            webView.goBack();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
+    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+      view.loadUrl(url);
+      return true;
     }
 
-    public static class PrintDocumentAdapterWrapper extends PrintDocumentAdapter {
-        String TAG = "PrintDocumentAdapterWrapper";
-        private final PrintDocumentAdapter delegate;
-
-        PrintDocumentAdapterWrapper(PrintDocumentAdapter adapter) {
-            super();
-            this.delegate = adapter;
-        }
-
-        @Override
-        public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes, CancellationSignal cancellationSignal, LayoutResultCallback callback, Bundle extras) {
-            delegate.onLayout(oldAttributes, newAttributes, cancellationSignal, callback, extras);
-            Log.d(TAG, "onLayout");
-        }
-
-        @Override
-        public void onWrite(PageRange[] pages, ParcelFileDescriptor destination, CancellationSignal cancellationSignal, WriteResultCallback callback) {
-            delegate.onWrite(pages, destination, cancellationSignal, callback);
-            Log.d(TAG, "onWrite");
-        }
-
-        public void onFinish() {
-            delegate.onFinish();
-            Log.d(TAG, "onFinish");
-        }
-
+    @Override
+    public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+      Toast.makeText(getApplicationContext(), "No internet connection", Toast.LENGTH_LONG).show();
+//      webView.loadUrl("file:///android_asset/lost.html");
     }
 
-    //create a function to create the print job
-    private void createWebPrintJob(WebView webView) {
+    @Override
+    public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+      super.onReceivedSslError(view, handler, error);
+      handler.cancel();
+    }
 
-        //create object of print manager in your device
-        PrintManager printManager = (PrintManager) this.getSystemService(Context.PRINT_SERVICE);
+    @Override
+    public void onPageStarted(WebView view, String url, Bitmap favicon) {
+      super.onPageStarted(view, url, favicon);
+      progressBar.setVisibility(View.VISIBLE);
+    }
 
-        //create object of print adapter
-        PrintDocumentAdapterWrapper printAdapter = new PrintDocumentAdapterWrapper(webView.createPrintDocumentAdapter());
+    @Override
+    public void onPageFinished(WebView view, String url) {
+      super.onPageFinished(view, url);
+      progressBar.setVisibility(View.GONE);
+      createWebPrintJob(view);
+    }
+  }
 
-        //provide name to your newly generated pdf file
-        String jobName = "Text2Print";
 
-        //open print dialog
-        if (printManager != null) {
-            printManager.print(jobName, printAdapter, new PrintAttributes.Builder().setMinMargins(new PrintAttributes.Margins(0, 0, 0, 0)).build());
-        } else {
-            Log.e("createWebPrintJob","printManager null");
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+    if ((keyCode == KeyEvent.KEYCODE_BACK) && webView.canGoBack()) {
+      webView.goBack();
+      return true;
+    }
+    return super.onKeyDown(keyCode, event);
+  }
+
+  public static class PrintDocumentAdapterWrapper extends PrintDocumentAdapter {
+    String TAG = "PrintDocumentAdapterWrapper";
+    private final PrintDocumentAdapter delegate;
+    private final Activity activity;
+
+    PrintDocumentAdapterWrapper(Activity activity, PrintDocumentAdapter adapter) {
+      super();
+      this.activity = activity;
+      this.delegate = adapter;
+    }
+
+    @Override
+    public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes, CancellationSignal cancellationSignal, LayoutResultCallback callback, Bundle extras) {
+      delegate.onLayout(oldAttributes, newAttributes, cancellationSignal, callback, extras);
+      Log.d(TAG, "onLayout");
+    }
+
+    @Override
+    public void onWrite(PageRange[] pages, ParcelFileDescriptor destination, CancellationSignal cancellationSignal, WriteResultCallback callback) {
+      delegate.onWrite(pages, destination, cancellationSignal, callback);
+      Log.d(TAG, "onWrite");
+    }
+
+    @Override
+    public void onFinish() {
+      delegate.onFinish();
+      activity.finish();
+      Log.d(TAG, "onFinish");
+    }
+
+  }
+
+  //create a function to create the print job
+  private void createWebPrintJob(WebView webView) {
+
+    //create object of print manager in your device
+    PrintManager printManager = (PrintManager) this.getSystemService(Context.PRINT_SERVICE);
+
+    //create object of print adapter
+    PrintDocumentAdapterWrapper printAdapter = new PrintDocumentAdapterWrapper(MainActivity.this, webView.createPrintDocumentAdapter());
+
+    //provide name to your newly generated pdf file
+    String jobName = "Print Invoice";
+
+    //open print dialog
+    if (printManager != null) {
+      printManager.print(jobName, printAdapter, new PrintAttributes.Builder().setMinMargins(new PrintAttributes.Margins(0, 0, 0, 0)).build());
+    } else {
+      Log.e("createWebPrintJob", "printManager null");
 //            webView.loadData(String.format(Locale.US, htmlHead, fontSize, printFontSize) + "PrintManager is null" + htmlFooter, "text/html; charset=utf-8", "utf-8");
 
-        }
     }
+  }
 
 
 }

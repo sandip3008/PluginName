@@ -1,8 +1,14 @@
 package com.example.sample.plugin;
 
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 
+import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,15 +18,17 @@ import org.json.JSONObject;
  */
 public class PluginName extends CordovaPlugin {
 
-    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
-        super.initialize(cordova, webView);
-    }
+  Context context;
+    // public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+    //     super.initialize(cordova, webView);
+    // }
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        Context context = cordova.getActivity().getApplicationContext();
+        context = cordova.getActivity().getApplicationContext();
         if (action.equals("new_activity")) {
             String message = args.getString(0);
+            System.out.println("test message new_activity###" +message);
             this.openNewActivity(message);
             return true;
         }
@@ -29,6 +37,7 @@ public class PluginName extends CordovaPlugin {
 
     private void openNewActivity(String data) {
         Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra("data",data);
         this.cordova.getActivity().startActivity(intent);
     }
 }
